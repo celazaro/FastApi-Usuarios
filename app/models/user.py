@@ -1,5 +1,7 @@
-from sqlmodel import SQLModel, Field, Relationship
+from sqlmodel import SQLModel, Field, Relationship # type: ignore
 from typing import Optional, List
+from pydantic import BaseModel, HttpUrl
+from fastapi import UploadFile  # Agregamos esta importación
 
 
 class UserBase(SQLModel):
@@ -39,7 +41,13 @@ class UserUpdate(SQLModel):
     is_active: bool | None = None
 
 
-# Nuevo modelo para el perfil
+class UserInfo(SQLModel):
+    """Modelo para mostrar información básica del usuario"""
+    username: str
+    email: str
+    full_name: str | None = None
+
+
 class ProfileBase(SQLModel):
     bio: str | None = None
     image_url: str | None = None
@@ -54,16 +62,40 @@ class Profile(ProfileBase, table=True):
 
 
 class ProfileCreate(ProfileBase):
-    pass
+    image: Optional[UploadFile] = None
+
+    class Config:
+        arbitrary_types_allowed = True
 
 
 class ProfileRead(ProfileBase):
     id: int
     user_id: int
+    user: UserInfo | None = None  # Agregamos la información del usuario
+    
+    def dict(self, *args, **kwargs):
+        profile_dict = super().dict(*args, **kwargs)
+        if profile_dict.get("image_url"):
+            profile_dict["image_url"] = f"/media/{profile_dict['image_url'].split('/')[-1]}"
+        return profile_dict
+
+
+class ProfileFormData(ProfileBase):
+    """Modelo para mostrar los datos actuales del formulario"""
+    user_info: UserInfo
+    
+    def dict(self, *args, **kwargs):
+        form_dict = super().dict(*args, **kwargs)
+        if form_dict.get("image_url"):
+            form_dict["image_url"] = f"/media/{form_dict['image_url'].split('/')[-1]}"
+        return form_dict
 
 
 class ProfileUpdate(SQLModel):
     bio: str | None = None
-    image_url: str | None = None
+    image: Optional[UploadFile] = None
     location: str | None = None
     website: str | None = None
+
+    class Config:
+        arbitrary_types_allowed = True
