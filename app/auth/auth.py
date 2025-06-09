@@ -11,7 +11,7 @@ from app.db.database import get_session
 # Configuración del token JWT
 SECRET_KEY = "super-secret-key"  # Asegúrate de almacenarlo en variables de entorno en producción.
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 30
+ACCESS_TOKEN_EXPIRE_MINUTES = 1
 
 # Usamos HTTPBearer en lugar de OAuth2PasswordBearer para permitir el ingreso manual del token.
 bearer_scheme = HTTPBearer()

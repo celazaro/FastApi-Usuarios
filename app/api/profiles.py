@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File,
 from sqlmodel import Session, select
 from typing import Optional
 from fastapi.encoders import jsonable_encoder
+import shutil
 
 from app.models.user import (
     Profile, ProfileCreate, ProfileRead, ProfileUpdate, 
@@ -13,7 +14,7 @@ from app.utils.image_handler import save_image, delete_image
 
 router = APIRouter()
 
-@router.post("/", response_model=ProfileRead)
+@router.post("/")
 async def create_profile(
     bio: str = Form(None),
     location: str = Form(None),
@@ -40,13 +41,14 @@ async def create_profile(
             image_path = await save_image(image)
         except ValueError as e:
             raise HTTPException(status_code=400, detail=str(e))
+    
 
     # Crear el perfil
     db_profile = Profile(
         bio=bio,
         location=location,
         website=website,
-        image_url=image_path,
+        image_url=f"http://127.0.0.1:8000/{image_path}",
         user_id=current_user.id
     )
     
@@ -83,7 +85,7 @@ def get_profile_form_data(
     # Si existe el perfil, devolver todos los datos
     return ProfileFormData(
         bio=profile.bio,
-        image_url=profile.image_url,
+        image_url=profile.image_url, 
         location=profile.location,
         website=profile.website,
         user_info=UserInfo(

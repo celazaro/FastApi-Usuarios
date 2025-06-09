@@ -1,8 +1,12 @@
 from sqlmodel import SQLModel, create_engine, Session 
+import os
 
 # Nombre del archivo de base de datos SQLite
 sqlite_file_name = "db.sqlite3"
-sqlite_url = f"sqlite:///{sqlite_file_name}"
+# Obtener la ruta absoluta del directorio del proyecto
+base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+# Crear la ruta completa al archivo de la base de datos
+sqlite_url = f"sqlite:///{os.path.join(base_dir, sqlite_file_name)}"
 
 # Requerido por SQLite para evitar errores en aplicaciones asincrónicas
 connect_args = {"check_same_thread": False}

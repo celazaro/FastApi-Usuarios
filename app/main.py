@@ -1,10 +1,12 @@
-from fastapi import FastAPI, Request
+from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from pathlib import Path
 from app.db.database import create_db_and_tables
 from app.api import users, auth, private, profiles     
 # Importamos el router de usuarios (lo crearemos en breve)
+
+import os
 
 
 app = FastAPI()
@@ -18,9 +20,12 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Montar el directorio media para servir archivos estáticos
-app.mount("/media", StaticFiles(directory="media"), name="media")
 
+# Obtener ruta absoluta a la carpeta 'media'
+ruta_media = os.path.join(os.path.dirname(os.path.dirname(__file__)), "media")
+
+# Montar la carpeta 'media' en la ruta '/media'
+app.mount("/media", StaticFiles(directory=ruta_media), name="media")
 
 @app.on_event("startup")
 def on_startup():
@@ -38,5 +43,6 @@ app.include_router(auth.router)  # <- agregamos auth.router
 app.include_router(private.router, tags=["private"])
 
 app.include_router(profiles.router, prefix="/profiles", tags=["profiles"])  # Nueva línea
+
 
 
